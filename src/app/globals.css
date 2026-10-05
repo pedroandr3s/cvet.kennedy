@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+/*
+ * TOKENS DE DISEÑO
+ * ----------------
+ * Paleta tomada del logo de la clínica: azul y rojo. El amarillo solo se usa
+ * como acento de promoción. Contrastes AA: ink/paper > 14:1 · paper/brand 6.4:1
+ * · blanco/hot 4.9:1 · ink/sun 11:1
+ */
+@theme {
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Figtree Variable",
+    ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0a1b4a; /* texto y fondos oscuros: azul noche */
+  --color-brand: #0a47d6; /* azul del logo: iconos, enlaces, secciones destacadas */
+  --color-brand-deep: #0733a0;
+  --color-mist: #eaf0fd; /* superficies suaves */
+  --color-paper: #fbfcff; /* fondo base */
+  --color-hot: #e0121b; /* rojo del logo: acción principal (reservar) */
+  --color-hot-hover: #bf0e16;
+  --color-sun: #ffc933; /* acento de promoción */
+  --color-sun-hover: #ffd75e;
+  --color-wa: #0f7b4f; /* solo para botones propios de WhatsApp */
+  --color-muted: #475879; /* texto secundario */
+
+  --radius-card: 1.25rem;
+  --radius-photo: 1.75rem;
+
+  /* Una sola sombra, teñida con el color de marca, solo para lo elevado */
+  --shadow-lift: 0 18px 40px -24px rgb(10 27 74 / 0.45);
+}
+
+@layer base {
+  /* En escritorio la escala sigue el alto de la ventana, para que cada sección
+     "de una pantalla" quepa también en pantallas bajas (laptops). */
+  @media (min-width: 1024px) {
+    html {
+      font-size: clamp(14px, 1.8vh, 16px);
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 7.4vw, 4rem);
+    line-height: 1.02;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 4.2vw, 2.5rem);
+    line-height: 1.1;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    line-height: 1.25;
+    font-weight: 650;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+
+  /* Sobre fondos oscuros el anillo de foco cambia a color claro */
+  .on-dark :focus-visible {
+    outline-color: var(--color-sun);
+  }
+
+  ::selection {
+    background: var(--color-sun);
+    color: var(--color-ink);
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 100rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .wrap {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Espaciado vertical de secciones, definido una sola vez */
+  .section {
+    padding-block: 3.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .section {
+      padding-block: 5.5rem;
+    }
+  }
+
+  /*
+   * Secciones "de una pantalla": al navegar con el menú, toda su información
+   * debe verse sin seguir bajando. En escritorio ocupan el alto visible bajo el
+   * encabezado y se centran; si el contenido es más alto, crecen lo necesario.
+   */
+  @media (min-width: 1024px) {
+    .screen {
+      min-height: calc(100svh - 4.5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-block: 2rem;
+    }
+  }
+
+  /*
+   * Arco: la forma firma de la web (foto principal). Los radios van explícitos
+   * porque `border-radius: 9999px` escalaría también las esquinas inferiores.
+   * Proporción 4/5 → radio horizontal 50% del ancho = radio vertical 40% del alto.
+   */
+  .arch {
+    aspect-ratio: 4 / 5;
+    border-radius: 50% 50% var(--radius-photo) var(--radius-photo) / 40% 40%
+      var(--radius-photo) var(--radius-photo);
+  }
+
+  /* Enlaces de navegación con subrayado que crece */
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.6rem;
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.2rem;
+    height: 2px;
+    background: var(--color-brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/*
+ * ÚNICO momento animado de la página: entrada escalonada del hero.
+ * Solo si la persona no pidió reducir movimiento. Sin JS, el contenido
+ * nunca queda oculto.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
